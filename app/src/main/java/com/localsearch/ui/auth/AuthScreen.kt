@@ -2,6 +2,7 @@ package com.localsearch.ui.auth
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -51,27 +52,36 @@ fun AuthBody(
     onSignUpButtonClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_extra_large)),
-        modifier = modifier,
+    Box(
+        modifier = modifier.fillMaxSize()
     ) {
+        // 로고를 중앙에 배치
         Image(
             painter = painterResource(id = R.drawable.ic_launcher_foreground),
             contentDescription = "logo",
-            modifier = Modifier.size(300.dp)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        MenuButton(
-            onClick = onLoginButtonClick,
-            text = "로그인"
+            modifier = Modifier
+                .size(300.dp)
+                .align(Alignment.Center) // 중앙에 위치
         )
 
-        MenuButton(
-            onClick = onSignUpButtonClick,
-            text = "회원가입"
-        )
+        // 버튼들을 하단에 배치
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium)),
+            modifier = Modifier
+                .align(Alignment.BottomCenter) // 하단 중앙에 위치
+                .padding(bottom = dimensionResource(id = R.dimen.padding_medium)) // 하단 여백 추가
+        ) {
+            MenuButton(
+                onClick = onLoginButtonClick,
+                text = "로그인"
+            )
+
+            MenuButton(
+                onClick = onSignUpButtonClick,
+                text = "회원가입"
+            )
+        }
     }
 }
 

@@ -29,7 +29,7 @@ fun MenuButton(
         contentPadding = PaddingValues(vertical = dimensionResource(R.dimen.padding_medium)),
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = dimensionResource(R.dimen.padding_extra_large))
+            .padding(horizontal = dimensionResource(R.dimen.padding_medium))
             .shadow(4.dp, shape = MaterialTheme.shapes.medium),
         shape = MaterialTheme.shapes.medium.copy(
             topEnd = CornerSize(8.dp),

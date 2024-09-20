@@ -8,6 +8,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.localsearch.ui.auth.AuthDestination
 import com.localsearch.ui.auth.AuthScreen
+import com.localsearch.ui.auth.LoginDestination
+import com.localsearch.ui.auth.LoginScreen
+import com.localsearch.ui.auth.SignUpDestination
+import com.localsearch.ui.auth.SignUpScreen
 
 @Composable
 fun LocalSearchNavHost(
@@ -30,8 +34,20 @@ fun LocalSearchNavHost(
 
         composable(route = AuthDestination.route) {
             AuthScreen(
-                navigateToLoginScreen = {navController.navigate(AuthDestination.route)},
-                navigateToSignUpScreen = {navController.navigate(AuthDestination.route)},
+                navigateToLoginScreen = {navController.navigate(LoginDestination.route)},
+                navigateToSignUpScreen = {navController.navigate(SignUpDestination.route)},
+            )
+        }
+
+        composable(route = LoginDestination.route) {
+            LoginScreen(
+                navigateBack = {navController.popBackStack()},
+            )
+        }
+
+        composable(route = SignUpDestination.route) {
+            SignUpScreen(
+                navigateBack = {navController.popBackStack()},
             )
         }
     }
