@@ -23,7 +23,7 @@ fun LocalSearchNavHost(
     tokenManager: TokenManager,
     modifier: Modifier = Modifier,
 ) {
-    tokenManager.clearTokens()
+//    tokenManager.clearTokens()  // TODO : 추후 삭제
     val isLoggedIn = tokenManager.getAccessToken() != null
     val startDestination = if (isLoggedIn) {
         SearchDestination.route// 로그인 후 이동할 화면 (예: 메인 화면)
