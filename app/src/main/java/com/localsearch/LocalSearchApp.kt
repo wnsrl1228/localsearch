@@ -11,16 +11,19 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.localsearch.navigation.LocalSearchNavHost
+import com.localsearch.util.TokenManager
 
 
 @Composable
 fun LocalSearchApp(navController: NavHostController = rememberNavController()) {
-    LocalSearchNavHost(navController = navController)
+    val tokenManager = TokenManager(LocalContext.current)
+    LocalSearchNavHost(navController = navController, tokenManager = tokenManager)
 }
 
 @Composable

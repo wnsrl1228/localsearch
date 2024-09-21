@@ -22,6 +22,7 @@ import com.localsearch.R
 fun MenuButton(
     onClick: () -> Unit,
     text: String,
+    enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     Button(
@@ -35,6 +36,7 @@ fun MenuButton(
             topEnd = CornerSize(8.dp),
             bottomStart = CornerSize(8.dp)
         ),
+        enabled = enabled,
         colors = ButtonDefaults.buttonColors(
             containerColor = colorResource(R.color.menu_button),   // 버튼 배경 색
         ),

@@ -2,6 +2,7 @@ package com.localsearch.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -12,16 +13,20 @@ import com.localsearch.ui.auth.LoginDestination
 import com.localsearch.ui.auth.LoginScreen
 import com.localsearch.ui.auth.SignUpDestination
 import com.localsearch.ui.auth.SignUpScreen
+import com.localsearch.ui.search.SearchDestination
+import com.localsearch.ui.search.SearchScreen
+import com.localsearch.util.TokenManager
 
 @Composable
 fun LocalSearchNavHost(
     navController: NavHostController,
+    tokenManager: TokenManager,
     modifier: Modifier = Modifier,
 ) {
-
-    val isLoggedIn = false // 로그인 상태를 확인하는 함수 TODO : 로그인 구현 후 변경
+//    tokenManager.clearTokens()
+    val isLoggedIn = tokenManager.getAccessToken() != null
     val startDestination = if (isLoggedIn) {
-        "main_screen" // 로그인 후 이동할 화면 (예: 메인 화면)
+        SearchDestination.route// 로그인 후 이동할 화면 (예: 메인 화면)
     } else {
         AuthDestination.route // 로그인 페이지
     }
@@ -48,7 +53,15 @@ fun LocalSearchNavHost(
         composable(route = SignUpDestination.route) {
             SignUpScreen(
                 navigateBack = {navController.popBackStack()},
+                navigateToSearch = {navController.navigate(SearchDestination.route)}
             )
         }
+
+        composable(route = SearchDestination.route) {
+            SearchScreen(
+                navigateBack = {navController.popBackStack()},
+            )
+        }
+
     }
 }
