@@ -134,7 +134,6 @@ fun SignUpBody(
                 .align(Alignment.BottomCenter) // 하단 중앙에 위치
                 .padding(bottom = 16.dp) // 하단 여백 추가
         )
-
         // 로딩 중일 때 회전하는 애니메이션 표시
         if (uiState.isLoading) {
             Box(

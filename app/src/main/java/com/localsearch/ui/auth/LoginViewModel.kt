@@ -4,46 +4,45 @@ import android.app.Application
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.localsearch.data.api.RetrofitInstance
+import com.localsearch.data.model.auth.LoginRequest
 import com.localsearch.data.model.auth.SignUpRequest
 import com.localsearch.util.TokenManager
 import com.localsearch.util.parseErrorResponse
 import kotlinx.coroutines.launch
 
-data class SignUpUiState(
+data class LoginUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val isSignUpSuccess: Boolean = false
 )
 
-class SignUpViewModel(application: Application) : AndroidViewModel(application) {
+class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val _uiState = mutableStateOf(SignUpUiState())
-    val uiState: State<SignUpUiState> = _uiState
+    private val _uiState = mutableStateOf(LoginUiState())
+    val uiState: State<LoginUiState> = _uiState
 
     private val authService = RetrofitInstance.authService;
-    fun signUp(userId: String, password: String, nickname: String) {
 
-        val message = validateInputs(userId, password, nickname);
+    fun login(userId: String, password: String) {
+
+        val message = validateInputs(userId, password);
         if (message.isNotEmpty()) {
             _uiState.value = _uiState.value.copy(errorMessage = message)
             return;
         }
 
-
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
 
             try {
-                val response = authService.signUp(SignUpRequest(userId, password, nickname))
+                val response = authService.login(LoginRequest(userId, password))
 
                 if (response.isSuccessful) {
                     val loginTokens = response.body()
                     val tokenManager = TokenManager(getApplication<Application>().applicationContext)
                     tokenManager.saveTokens(loginTokens!!.accessToken, loginTokens!!.refreshToken)
-
                     _uiState.value = _uiState.value.copy(isSignUpSuccess = true)
                 } else {
 
@@ -66,14 +65,12 @@ class SignUpViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     // 입력 검증 함수
-    private fun validateInputs(userId: String, password: String, nickname: String): String {
+    private fun validateInputs(userId: String, password: String): String {
         return when {
             userId.isBlank() -> "아이디를 입력해주세요."
             userId.length < 5 || userId.length > 30 -> "아이디는 5~30자까지 입력할 수 있습니다."
             password.isBlank() -> "비밀번호를 입력해주세요."
             password.length < 5 || password.length > 30 -> "비밀번호는 5~30자까지 입력할 수 있습니다."
-            nickname.isBlank() -> "닉네임을 입력해주세요."
-            nickname.length < 2 || nickname.length > 20 -> "닉네임은 2~20자까지 입력할 수 있습니다."
             else -> "" // 모든 검증을 통과하면 빈 문자열 반환
         }
     }

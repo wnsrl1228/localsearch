@@ -11,15 +11,14 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitInstance {
     private const val BASE_URL = "http://10.0.2.2:8080"
-    private var tokenManager: TokenManager? = null
+    private lateinit var tokenManager: TokenManager
+    private lateinit var tokenInterceptorClient: OkHttpClient
 
-    fun initialize(context: Context) {
+    fun initialize(context: Context, onTokenRefreshFail: () -> Unit) {
         tokenManager = TokenManager(context)
-    }
 
-    private val tokenInterceptorClient: OkHttpClient by lazy {
-        OkHttpClient().newBuilder()
-            .addInterceptor(TokenInterceptor(tokenManager))
+        tokenInterceptorClient = OkHttpClient().newBuilder()
+            .addInterceptor(TokenInterceptor(tokenManager, authService, onTokenRefreshFail))
             .build()
     }
 
