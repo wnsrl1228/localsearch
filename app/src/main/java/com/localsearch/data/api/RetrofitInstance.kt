@@ -2,7 +2,7 @@ package com.localsearch.data.api
 
 import android.content.Context
 import com.localsearch.data.api.auth.AuthService
-import com.localsearch.data.api.auth.SearchService
+import com.localsearch.data.api.search.SearchService
 import com.localsearch.data.network.TokenInterceptor
 import com.localsearch.util.TokenManager
 import okhttp3.OkHttpClient

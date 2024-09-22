@@ -21,6 +21,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,7 +32,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -42,6 +45,8 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.localsearch.LocalSearchTopAppBar
 import com.localsearch.R
 import com.localsearch.navigation.NavigationDestination
+import com.localsearch.ui.components.MenuButton
+import com.localsearch.ui.components.SmallTextButton
 
 object SearchDestination : NavigationDestination {
     override val route = "search"
@@ -74,8 +79,10 @@ fun SearchScreen(
 
 @Composable
 fun SearchBody(
+    viewModel: SearchViewModel = viewModel(),
     modifier: Modifier = Modifier
 ) {
+    val uiState by viewModel.uiState.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
     // 허용 권한
@@ -85,6 +92,8 @@ fun SearchBody(
     )
     var defaultSpot by remember { mutableStateOf(LatLng(37.497868, 127.028026)) }
     var currentSpot by remember { mutableStateOf(LatLng(37.497868, 127.028026)) }
+    var currentZoom by remember { mutableStateOf(17f) }
+
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(defaultSpot, 17f)
     }
@@ -108,13 +117,15 @@ fun SearchBody(
         }
     }
 
-    // 실시간 위치 데이터 TODO: 추후 삭제, currentSpot도 필요없음
+    // 실시간 위치 데이터 TODO: 주변 탐색하기 위한 자표값으로 필요함
     LaunchedEffect(cameraPositionState) {
         snapshotFlow { cameraPositionState.position }
             .collect { position ->
+                // 위치 정보를 활용하는 로직을 여기에 추가
                 val currentLatLng = position.target
                 currentSpot = LatLng(currentLatLng.latitude, currentLatLng.longitude)
-                // 위치 정보를 활용하는 로직을 여기에 추가
+
+                currentZoom = position.zoom
             }
     }
 
@@ -142,9 +153,18 @@ fun SearchBody(
         ) {
             Marker(
                 state = MarkerState(position = defaultSpot),
-                title = "Marker in DefaultSpot",
-                snippet = "This is the current spot"
+                title = "내 위치",
+                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
             )
+
+            // 장소 리스트에서 마커 추가
+            uiState.localPlaceList.forEach { place ->
+                Marker(
+                    state = MarkerState(position = LatLng(place.latitude, place.longitude)),
+                    title = place.displayName,
+                    snippet = place.formattedAddress,
+                )
+            }
         }
 
         // 버튼과 텍스트를 하단에 배치
@@ -155,7 +175,7 @@ fun SearchBody(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Button(
+            SmallTextButton(
                 onClick = {
                     // 권한 다시 확인,
                     checkAndRequestPermissions(context, permissions, requestPermissionLauncher) { lat, long ->
@@ -167,17 +187,19 @@ fun SearchBody(
                         }) {
                         showDialog = true
                     }
-                }
-            ) {
-                Text(text = "내 위치로 이동")
-            }
-            Button(
-                onClick = {}
-            ) {
-                Text(text = "Allow")
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(text = "${currentSpot.latitude}, ${currentSpot.longitude}") // TODO : 추후 삭제
+                },
+                text = "내 위치로 이동" ,
+                modifier = Modifier.padding(vertical = 16.dp)
+            )
+            MenuButton(
+                onClick = { viewModel.search(currentSpot.latitude, currentSpot.longitude, getRadiusByZoom(currentZoom)) },
+                text = "주변 탐색하기",
+                modifier = Modifier.padding(horizontal = 32.dp)
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+//            Text(text = "${currentSpot.latitude}, ${currentSpot.longitude}, ${currentZoom}\"") // TODO : 추후 삭제
+//            Text(text = "${currentZoom}\"") // TODO : 추후 삭제
         }
     }
 
