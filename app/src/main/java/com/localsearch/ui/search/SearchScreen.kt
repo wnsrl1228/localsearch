@@ -12,9 +12,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
@@ -45,6 +48,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.localsearch.LocalSearchTopAppBar
 import com.localsearch.R
 import com.localsearch.navigation.NavigationDestination
+import com.localsearch.ui.components.CategoryButton
 import com.localsearch.ui.components.MenuButton
 import com.localsearch.ui.components.SmallTextButton
 
@@ -144,6 +148,7 @@ fun SearchBody(
         }
     }
 
+
     Box(modifier = Modifier.fillMaxSize()) {
         // Google Map
         GoogleMap(
@@ -164,6 +169,35 @@ fun SearchBody(
                     title = place.displayName,
                     snippet = place.formattedAddress,
                 )
+            }
+        }
+
+        // 카테고리
+        Column(modifier = Modifier
+            .align(Alignment.TopCenter) // 상단 중앙에 배치
+            .padding(top = 70.dp, // 탑바의 높이에 맞춰 여백 추가
+                    start = 16.dp,
+                    end = 16.dp
+            )
+        ) {
+            // 카테고리 선택 버튼
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp) // 버튼 간격
+            ) {
+                items(Category.values().toList()) { category ->
+                    CategoryButton(
+                        text = category.koreaName,
+                        onClick = {
+                            viewModel.setCategory(category)
+                            viewModel.search(currentSpot.latitude, currentSpot.longitude, getRadiusByZoom(currentZoom))
+                                  },
+                        modifier = Modifier.weight(1f),
+                        isSelected =  uiState.selectedCategory.serverValue != category.serverValue
+                    )
+                }
             }
         }
 

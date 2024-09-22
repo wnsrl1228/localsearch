@@ -53,6 +53,10 @@ class SearchViewModel : ViewModel() {
             }
         }
     }
+
+    fun setCategory(category: Category) {
+        _uiState.value = _uiState.value.copy(selectedCategory = category)
+    }
 }
 
 
@@ -66,16 +70,12 @@ data class PlaceData(
     val longitude: Double = 0.0,
 )
 
-enum class Category(val serverValue: String) {
-    MEDICAL("medical"),
-    CAFE_BAKERY("cafeBakery"),
-    FOOD("food"),
-    ACCOMMODATION("accommodation"),
-    STORE("store");
-
-    override fun toString(): String {
-        return serverValue
-    }
+enum class Category(val serverValue: String, val koreaName: String) {
+    FOOD("food", "음식점"),
+    CAFE_BAKERY("cafeBakery", "카페/빵"),
+    ACCOMMODATION("accommodation", "숙박"),
+    STORE("store", "상점"),
+    MEDICAL("medical", "의료");
 }
 
 enum class Sort {

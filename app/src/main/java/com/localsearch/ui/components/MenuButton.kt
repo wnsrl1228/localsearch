@@ -77,3 +77,31 @@ fun SmallTextButton(
         )
     }
 }
+
+@Composable
+fun CategoryButton(
+    text: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Button(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (isSelected) Color.White else Color.DarkGray,
+            contentColor = if (isSelected) Color.Black else Color.White
+        ),
+        shape = MaterialTheme.shapes.medium.copy(
+            topEnd = CornerSize(8.dp),
+            bottomStart = CornerSize(8.dp)
+        ),
+        modifier = modifier
+            .shadow(4.dp, shape = MaterialTheme.shapes.medium),
+    ) {
+        Text(
+            text = text,
+            fontWeight = FontWeight.Bold,
+            fontSize = 14.sp
+        )
+    }
+}
