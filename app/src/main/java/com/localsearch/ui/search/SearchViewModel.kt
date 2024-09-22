@@ -40,6 +40,7 @@ class SearchViewModel : ViewModel() {
                     _uiState.value = _uiState.value.copy(
                         localPlaceList = body?.places ?: emptyList(),
                     )
+                    _uiState.value = _uiState.value.copy(errorMessage = null)
                 } else {
                     val errorBody = response.errorBody()?.string()
                     val errorResponse = parseErrorResponse(errorBody)
