@@ -29,12 +29,8 @@ class PlaceDetailViewModel(private val placeData: PlaceData?) : ViewModel() {
     val uiState: StateFlow<PlaceDetailUiState> = _uiState.asStateFlow()
     private val searchService = RetrofitInstance.searchService
 
-    init {
-        println(placeData)
-        initialize()
-    }
 
-    private fun initialize() {
+    fun initialize() {
 
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
