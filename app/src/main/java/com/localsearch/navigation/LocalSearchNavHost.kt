@@ -18,6 +18,8 @@ import com.localsearch.ui.auth.SignUpDestination
 import com.localsearch.ui.auth.SignUpScreen
 import com.localsearch.ui.place.PlaceDetailDestination
 import com.localsearch.ui.place.PlaceDetailScreen
+import com.localsearch.ui.place.ReviewCreateDestination
+import com.localsearch.ui.place.ReviewCreateScreen
 import com.localsearch.ui.search.PlaceData
 import com.localsearch.ui.search.SearchDestination
 import com.localsearch.ui.search.SearchScreen
@@ -82,6 +84,22 @@ fun LocalSearchNavHost(
             PlaceDetailScreen(
                 navigateBack = {navController.popBackStack()},
                 placeData = placeData,
+                navigateToReviewCreate = {navController.navigate("${ReviewCreateDestination.route}/${it}")},
+            )
+        }
+
+        composable(
+            route = ReviewCreateDestination.routeWithArgs,
+            arguments = listOf(navArgument(ReviewCreateDestination.placeId) {
+                type = NavType.StringType
+            })
+        ) { backStackEntry ->
+
+            val placeId = backStackEntry.arguments?.getString("placeId")
+
+            ReviewCreateScreen(
+                navigateBack = {navController.popBackStack()},
+                placeId = placeId,
             )
         }
     }

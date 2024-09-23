@@ -43,6 +43,7 @@ object PlaceDetailDestination : NavigationDestination {
 fun PlaceDetailScreen(
     navigateBack: () -> Unit,
     placeData: PlaceData?,
+    navigateToReviewCreate: (String) -> Unit,
 ) {
     val viewModel: PlaceDetailViewModel = viewModel(factory = PlaceDetailViewModelFactory(placeData))
 
@@ -58,6 +59,7 @@ fun PlaceDetailScreen(
         PlaceDetailBody(
             viewModel = viewModel,
             placeData = placeData,
+            navigateToReviewCreate = navigateToReviewCreate,
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
@@ -70,6 +72,7 @@ fun PlaceDetailScreen(
 fun PlaceDetailBody(
     viewModel: PlaceDetailViewModel,
     placeData: PlaceData?,
+    navigateToReviewCreate: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -139,7 +142,7 @@ fun PlaceDetailBody(
         // 리뷰 작성하기 버튼
         MenuButton(
             text = "리뷰 작성하기",
-            onClick = { /* 리뷰 작성하기 로직 */ },
+            onClick = { placeData?.let { navigateToReviewCreate(it.id) } },
             modifier = Modifier.fillMaxWidth()
         )
     }
