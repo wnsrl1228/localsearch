@@ -2,7 +2,7 @@ package com.localsearch.ui.search
 
 fun getRadiusByZoom(zoomLevel: Float): Double {
     return when (zoomLevel.toInt()) {
-        2 -> 5180000.0
+        2 -> 2590000.0
         3 -> 2590000.0
         4 -> 1280000.0
         5 -> 640000.0

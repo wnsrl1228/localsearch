@@ -1,18 +1,25 @@
 package com.localsearch.navigation
 
+import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import com.google.gson.Gson
 import com.localsearch.ui.auth.AuthDestination
 import com.localsearch.ui.auth.AuthScreen
 import com.localsearch.ui.auth.LoginDestination
 import com.localsearch.ui.auth.LoginScreen
 import com.localsearch.ui.auth.SignUpDestination
 import com.localsearch.ui.auth.SignUpScreen
+import com.localsearch.ui.place.PlaceDetailDestination
+import com.localsearch.ui.place.PlaceDetailScreen
+import com.localsearch.ui.search.PlaceData
 import com.localsearch.ui.search.SearchDestination
 import com.localsearch.ui.search.SearchScreen
 import com.localsearch.util.TokenManager
@@ -60,9 +67,27 @@ fun LocalSearchNavHost(
 
         composable(route = SearchDestination.route) {
             SearchScreen(
+                navigateToPlaceDetail = {navController.navigateToPlaceDetail(it)},
                 navigateBack = {navController.popBackStack()},
             )
         }
 
+        composable(
+            route = PlaceDetailDestination.routeWithArgs,
+            arguments = listOf(navArgument(PlaceDetailDestination.placeData) {
+                type = NavType.StringType
+            })) { backStackEntry ->
+
+            val placeDataJson = backStackEntry.arguments?.getString("placeData")
+            val placeData = Gson().fromJson(placeDataJson, PlaceData::class.java)
+            PlaceDetailScreen(
+                navigateBack = {navController.popBackStack()},
+                placeData = placeData,
+            )
+        }
     }
+}
+fun NavController.navigateToPlaceDetail(placeData: PlaceData) {
+    val placeJson = Uri.encode(Gson().toJson(placeData))
+    this.navigate("${PlaceDetailDestination.route}/$placeJson")
 }

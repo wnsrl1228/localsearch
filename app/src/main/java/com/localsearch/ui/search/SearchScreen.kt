@@ -4,7 +4,10 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -31,6 +34,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -45,9 +50,11 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.AdvancedMarker
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerInfoWindow
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.localsearch.LocalSearchTopAppBar
@@ -64,6 +71,7 @@ object SearchDestination : NavigationDestination {
 
 @Composable
 fun SearchScreen(
+    navigateToPlaceDetail: (PlaceData) -> Unit,
     navigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -78,6 +86,7 @@ fun SearchScreen(
         }
     ) { innerPadding ->
         SearchBody(
+            navigateToPlaceDetail = navigateToPlaceDetail,
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
@@ -89,6 +98,7 @@ fun SearchScreen(
 @Composable
 fun SearchBody(
     viewModel: SearchViewModel = viewModel(),
+    navigateToPlaceDetail: (PlaceData) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -99,17 +109,23 @@ fun SearchBody(
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.ACCESS_FINE_LOCATION
     )
-    var defaultSpot by remember { mutableStateOf(LatLng(37.497868, 127.028026)) }
-    var currentSpot by remember { mutableStateOf(LatLng(37.497868, 127.028026)) }
-    var currentZoom by remember { mutableStateOf(17f) }
+    var defaultSpot by rememberSaveable { mutableStateOf(LatLng(37.497868, 127.028026)) }
+    var defaultZoom by rememberSaveable { mutableStateOf(17f)  }
+    var currentSpot by rememberSaveable { mutableStateOf(LatLng(37.497868, 127.028026)) }
+    var currentZoom by rememberSaveable { mutableStateOf(17f) }
 
+    var isFirst by rememberSaveable {
+        mutableStateOf(true)
+    }
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(defaultSpot, 17f)
+        position = CameraPosition.fromLatLngZoom(defaultSpot, defaultZoom)
     }
     var mapProperties by remember { mutableStateOf(
         MapProperties(
             minZoomPreference = 7f,
-            isMyLocationEnabled = false,  // !!주위 내 위치 사용 즉 권한허용
+            isMyLocationEnabled = permissions.all {
+                ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+            },  // !!주위 내 위치 사용 즉 권한허용
         )
     ) }
 
@@ -141,16 +157,19 @@ fun SearchBody(
     // 현재 위치 변동시 이동
     LaunchedEffect(defaultSpot) {
         cameraPositionState.animate(
-            update = CameraUpdateFactory.newLatLngZoom(defaultSpot, 17f),
-            durationMs = 2000 // 애니메이션 지속 시간 (1000ms = 1초)
+            update = CameraUpdateFactory.newLatLngZoom(defaultSpot, defaultZoom),
+            durationMs = 1000
         )
     }
 
     // 최초 렌더링 시 권한 체크
     LaunchedEffect(true) {
-        checkAndRequestPermissions(context, permissions, requestPermissionLauncher) { lat, long ->
-            defaultSpot = LatLng(lat, long)
+        if (isFirst) {
+            checkAndRequestPermissions(context, permissions, requestPermissionLauncher) { lat, long ->
+                defaultSpot = LatLng(lat, long)
+            }
         }
+        isFirst = false
     }
 
 
@@ -161,18 +180,20 @@ fun SearchBody(
             cameraPositionState = cameraPositionState,
             properties = mapProperties,
         ) {
-            Marker(
-                state = MarkerState(position = defaultSpot),
-                title = "내 위치",
-                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
-            )
 
             // 장소 리스트에서 마커 추가
             uiState.localPlaceList.forEach { place ->
-                Marker(
+                AdvancedMarker(
                     state = MarkerState(position = LatLng(place.latitude, place.longitude)),
                     title = place.displayName,
                     snippet = place.formattedAddress,
+                    onInfoWindowClick = {
+                        defaultSpot = LatLng(currentSpot.latitude, currentSpot.longitude)
+                        defaultZoom = currentZoom
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            navigateToPlaceDetail(place)
+                        }, 100)
+                    },
                 )
             }
         }
@@ -180,9 +201,10 @@ fun SearchBody(
         // 카테고리
         Column(modifier = Modifier
             .align(Alignment.TopCenter) // 상단 중앙에 배치
-            .padding(top = 70.dp, // 탑바의 높이에 맞춰 여백 추가
-                    start = 16.dp,
-                    end = 16.dp
+            .padding(
+                top = 70.dp, // 탑바의 높이에 맞춰 여백 추가
+                start = 16.dp,
+                end = 16.dp
             )
         ) {
             // 카테고리 선택 버튼
@@ -246,6 +268,7 @@ fun SearchBody(
 
             Spacer(modifier = Modifier.height(32.dp))
 //            Text(text = "${currentSpot.latitude}, ${currentSpot.longitude}, ${currentZoom}\"") // TODO : 추후 삭제
+            Text(text = "${defaultSpot.latitude}, ${defaultSpot.longitude}, ${currentZoom}\"") // TODO : 추후 삭제
 //            Text(text = "${currentZoom}\"") // TODO : 추후 삭제
         }
     }
