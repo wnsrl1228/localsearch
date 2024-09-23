@@ -16,6 +16,8 @@ import com.localsearch.ui.auth.LoginDestination
 import com.localsearch.ui.auth.LoginScreen
 import com.localsearch.ui.auth.SignUpDestination
 import com.localsearch.ui.auth.SignUpScreen
+import com.localsearch.ui.my.MyPageDestination
+import com.localsearch.ui.my.MyPageScreen
 import com.localsearch.ui.place.PlaceDetailDestination
 import com.localsearch.ui.place.PlaceDetailScreen
 import com.localsearch.ui.place.ReviewCreateDestination
@@ -70,6 +72,14 @@ fun LocalSearchNavHost(
             SearchScreen(
                 navigateToPlaceDetail = {navController.navigateToPlaceDetail(it)},
                 navigateBack = {navController.popBackStack()},
+                navigateToMyPage = {navController.navigate(MyPageDestination.route)},
+            )
+        }
+
+        composable(route = MyPageDestination.route) {
+            MyPageScreen(
+                navigateBack = {navController.popBackStack()},
+                navController = navController
             )
         }
 

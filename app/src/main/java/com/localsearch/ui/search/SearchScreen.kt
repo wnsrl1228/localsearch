@@ -73,6 +73,7 @@ object SearchDestination : NavigationDestination {
 fun SearchScreen(
     navigateToPlaceDetail: (PlaceData) -> Unit,
     navigateBack: () -> Unit,
+    navigateToMyPage: () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -81,7 +82,9 @@ fun SearchScreen(
             LocalSearchTopAppBar(
                 title = "현지탐색",
                 canNavigateBack = false,
-                navigateUp = navigateBack
+                navigateUp = navigateBack,
+                canMenuClicked = true,
+                onMenuClicked = navigateToMyPage
             )
         }
     ) { innerPadding ->
@@ -267,9 +270,6 @@ fun SearchBody(
             )
 
             Spacer(modifier = Modifier.height(32.dp))
-//            Text(text = "${currentSpot.latitude}, ${currentSpot.longitude}, ${currentZoom}\"") // TODO : 추후 삭제
-            Text(text = "${defaultSpot.latitude}, ${defaultSpot.longitude}, ${currentZoom}\"") // TODO : 추후 삭제
-//            Text(text = "${currentZoom}\"") // TODO : 추후 삭제
         }
     }
 
